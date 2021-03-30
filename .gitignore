@@ -130,3 +130,9 @@ dmypy.json
 .idea
 *.iml
 venv
+Bald
+crop
+labels
+masked
+not_masked
+reject
