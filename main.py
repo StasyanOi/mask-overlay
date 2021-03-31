@@ -1,23 +1,24 @@
 import cv2
 import dlib
 import os
+import csv
 import numpy as np
+import math
 
 # http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2
 face_detector = dlib.get_frontal_face_detector()
 landmark_detector = dlib.shape_predictor("shape_predictor_81_face_landmarks.dat")
 
-img = cv2.imread("crop/000115.jpg")
-faces = face_detector(img, 1)
-
-landmark_tuple = []
-for k, d in enumerate(faces):
-    landmarks = landmark_detector(img, d)
-    for n in range(0, 81):
-        x = landmarks.part(n).x
-        y = landmarks.part(n).y
-        landmark_tuple.append((x, y))
-        cv2.circle(img, (x, y), 2, (255, 255, 0), -1)
+# faces = face_detector(img, 1)
+#
+# landmark_tuple = []
+# for k, d in enumerate(faces):
+#     landmarks = landmark_detector(img, d)
+#     for n in range(0, 81):
+#         x = landmarks.part(n).x
+#         y = landmarks.part(n).y
+#         landmark_tuple.append((x, y))
+#         cv2.circle(img, (x, y), 2, (255, 255, 0), -1)
 
 # Load the detector
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
@@ -59,29 +60,98 @@ def transparentOverlay(src, overlay, pos=(0, 0), scale=1):
     return src, mask
 
 
-dir = os.listdir("./crop")
-for i in range(len(dir)):
+def getPoints(landmarks, points):
+    dst_pts = []
+    for i in range(len(points)):
+        x = landmarks.part(points[i]).x
+        y = landmarks.part(points[i]).y
+        dst_pts.append(np.array([x, y]))
+    return np.asarray(dst_pts).astype('float32')
+
+
+def getSrcPoints():
+    mask_annotation = "labels_mask.csv"
+    with open(mask_annotation) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=",")
+        src_pts = []
+        for i, row in enumerate(csv_reader):
+            # skip head or empty line if it's there
+            try:
+                src_pts.append(np.array([float(row[1]), float(row[2])]))
+            except ValueError:
+                continue
+    src_pts = np.array(src_pts, dtype="float32")
+    return src_pts
+
+
+def isFrontal(landmarks, x_delta, y_delta):
+    horizontal_center = landmarks.part(28).x
+    horizontal_right = landmarks.part(16).x
+    horizontal_left = landmarks.part(0).x
+
+    vertical_low = landmarks.part(30).x
+    vertical_high = landmarks.part(27).x
+
+    diff_y = math.fabs((horizontal_right - horizontal_center) - horizontal_center + horizontal_left)
+    diff_x = math.fabs(vertical_low - vertical_high)
+
+    if (diff_x <= x_delta) & (diff_y <= y_delta):
+        return True
+    else:
+        return False
+    pass
+
+
+j = 0
+for i in range(3440):
     ret, img = cap.read()
-    # cv2.imwrite("not_masked/" + str(i) + ".png", img)
-    # ret, img = cap.read()
+    # img = cv2.imread("not_masked/" + str(i) + ".png", cv2.IMREAD_UNCHANGED)
+    init = np.copy(img)
+    img = cv2.resize(img, dsize=(256, 256))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(img)
-    for (x, y, w, h) in faces:
-        if h > 0 and w > 0:
-            symin = int(y + 0.0 * h / 8) - 20
-            symax = int(y + 4.0 * h / 8) + 50
-            y_diff = symax - symin
-            right = 3
-            sxmin = int(x + 0.0 * w / 8) + right
-            sxmax = int(x + 7.5 * w / 8) + right
-            x_diff = sxmax - sxmin
-            face_glass_roi_color = img[symin:symax, sxmin:sxmax]
-            specs = cv2.resize(specs_ori, (x_diff, y_diff), interpolation=cv2.INTER_CUBIC)
-            _, mask = transparentOverlay(face_glass_roi_color, specs)
-            w_mask = np.zeros(gray.shape)
-            w_mask[symin:symax, sxmin:sxmax] = mask[:, :, 0]
-    # cv2.imwrite("masked/" + str(i) + ".png", img)
-    # cv2.imwrite("labels/" + str(i) + ".png", w_mask)
+    faces = face_detector(img, 1)
+
+    landmark_tuple = []
+    mask = None
+    for k, d in enumerate(faces):
+        landmarks = landmark_detector(img, d)
+        dst_pts = getPoints(landmarks, [29, 8, 0, 16, 73, 76, 5, 11, 25, 18, 77, 74])
+        src_pts = getSrcPoints()
+        if (dst_pts > 0).all():
+            mask_img = cv2.imread("merge.png", cv2.IMREAD_UNCHANGED)
+            mask_img = mask_img.astype(np.float32)
+            mask_img = mask_img / 255.0
+            M, _ = cv2.findHomography(src_pts, dst_pts)
+            transformed_mask = cv2.warpPerspective(
+                mask_img,
+                M,
+                (img.shape[1], img.shape[0]),
+                None,
+                cv2.INTER_LINEAR,
+                cv2.BORDER_CONSTANT,
+            )
+
+            alpha_mask = transformed_mask[:, :, 3]
+            mask = alpha_mask
+            alpha_image = 1.0 - alpha_mask
+            for c in range(0, 3):
+                img[:, :, c] = (
+                        alpha_mask * transformed_mask[:, :, c]
+                        + alpha_image * img[:, :, c]
+                )
+        # for n in range(0, 81):
+        #     x = landmarks.part(n).x
+        #     y = landmarks.part(n).y
+        #     landmark_tuple.append((x, y))
+        #     cv2.circle(img, (x, y), 2, (255, 255, 0), -1)
+
+        # if isFrontal(landmarks, 0, 15):
+        #     if mask is not None:
+        #         cv2.imwrite("labels/" + str(j) + ".png", mask * 255)
+        #         cv2.imwrite("masked/" + str(j) + ".png", img)
+        #         cv2.imwrite("no_mask/" + str(j) + ".png", init)
+        #         cv2.imshow('img.jpg', img)
+        #     j = j + 1
     cv2.imshow('img.jpg', img)
     k = cv2.waitKey(30) & 0xff
     if k == 27:
