@@ -69,8 +69,8 @@ def getPoints(landmarks, points):
     return np.asarray(dst_pts).astype('float32')
 
 
-def getSrcPoints():
-    mask_annotation = "labels_mask.csv"
+def getSrcPoints(num):
+    mask_annotation = "masks/" + str(num) + ".csv"
     with open(mask_annotation) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=",")
         src_pts = []
@@ -103,11 +103,26 @@ def isFrontal(landmarks, x_delta, y_delta):
 
 
 j = 0
-for i in range(3440):
-    ret, img = cap.read()
-    # img = cv2.imread("not_masked/" + str(i) + ".png", cv2.IMREAD_UNCHANGED)
+mask_index = 1
+dir = os.listdir("CelebAMask-HQ/CelebA-HQ-img-256-256/")
+
+
+def sort_names(dir):
+    ints = []
+    for i in range(len(dir)):
+        ints.append(int(dir[i].split(".")[0]))
+    ints.sort()
+    for i in range(len(dir)):
+        dir[i] = str(ints[i]) + ".png"
+    return dir
+
+
+dir = sort_names(dir)
+for i in range(len(dir)):
+    # ret, img = cap.read()
+    img = cv2.imread("CelebAMask-HQ/CelebA-HQ-img-256-256/" + dir[i], cv2.IMREAD_UNCHANGED)
     init = np.copy(img)
-    img = cv2.resize(img, dsize=(256, 256))
+    # img = cv2.resize(img, dsize=(256, 256))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     faces = face_detector(img, 1)
 
@@ -115,12 +130,12 @@ for i in range(3440):
     mask = None
     for k, d in enumerate(faces):
         landmarks = landmark_detector(img, d)
-        dst_pts = getPoints(landmarks, [29, 8, 0, 16, 73, 76, 5, 11, 25, 18, 77, 74])
-        src_pts = getSrcPoints()
+        dst_pts = getPoints(landmarks, [1, 3, 5, 7, 8, 9, 11, 13, 15, 29])
+        src_pts = getSrcPoints(mask_index)
         if (dst_pts > 0).all():
-            mask_img = cv2.imread("merge.png", cv2.IMREAD_UNCHANGED)
+            mask_img = cv2.imread("masks/" + str(mask_index) + ".png", cv2.IMREAD_UNCHANGED)
             mask_img = mask_img.astype(np.float32)
-            mask_img = mask_img / 255.0
+            mask_img = mask_img / 255
             M, _ = cv2.findHomography(src_pts, dst_pts)
             transformed_mask = cv2.warpPerspective(
                 mask_img,
@@ -130,15 +145,11 @@ for i in range(3440):
                 cv2.INTER_LINEAR,
                 cv2.BORDER_CONSTANT,
             )
-
-            alpha_mask = transformed_mask[:, :, 3]
+            alpha_mask = transformed_mask[:, :, 3] * 255.0
             mask = alpha_mask
-            alpha_image = 1.0 - alpha_mask
+            alpha_image = 255.0 - alpha_mask
             for c in range(0, 3):
-                img[:, :, c] = (
-                        alpha_mask * transformed_mask[:, :, c]
-                        + alpha_image * img[:, :, c]
-                )
+                img[:, :, c] = ((alpha_mask) * transformed_mask[:, :, c] + (alpha_image / 255) * img[:, :, c])
         # for n in range(0, 81):
         #     x = landmarks.part(n).x
         #     y = landmarks.part(n).y
@@ -152,7 +163,13 @@ for i in range(3440):
         #         cv2.imwrite("no_mask/" + str(j) + ".png", init)
         #         cv2.imshow('img.jpg', img)
         #     j = j + 1
-    cv2.imshow('img.jpg', img)
+    if mask is not None:
+        cv2.imwrite("CelebAMask-HQ/CelebA-HQ-img-256-256-labels/" + dir[i], mask * 255)
+        cv2.imwrite("CelebAMask-HQ/CelebA-HQ-img-256-256-masked/" + dir[i], img)
+    if mask_index != 5:
+        mask_index = mask_index + 1
+    else:
+        mask_index = 1
     k = cv2.waitKey(30) & 0xff
     if k == 27:
         cv2.imwrite('img.jpg', img)

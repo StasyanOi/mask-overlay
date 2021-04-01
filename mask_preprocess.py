@@ -17,6 +17,10 @@ def create_rgba(img, m):
 
 
 if __name__ == '__main__':
-    i = 5
-    first = cv2.imread("masks/" + str(i) + ".png")
-    create_rgba(first, i)
+    for i in range(30000):
+        img = cv2.imread("CelebAMask-HQ/CelebA-HQ-img/" + str(i) + ".jpg")
+        img = cv2.resize(img, dsize=(256, 256))
+        cv2.imwrite("CelebAMask-HQ/CelebA-HQ-img-256-256/" + str(i) + ".png", img)
+    # i = 5
+    # first = cv2.imread("masks/" + str(i) + ".png")
+    # create_rgba(first, i)
