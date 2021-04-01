@@ -136,3 +136,5 @@ labels
 masked
 not_masked
 reject
+CelebAMask-HQ
+no_mask
