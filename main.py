@@ -4,7 +4,13 @@ import os
 import csv
 import numpy as np
 import math
+import PIL.Image as Image
+from tensorflow.keras.models import load_model
 
+# dir = "train_data/medical/CelebA-HQ-img-256-256-masked"
+
+# model = load_model("unet_seg", compile=False)
+# model.summary()
 # http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2
 face_detector = dlib.get_frontal_face_detector()
 landmark_detector = dlib.shape_predictor("shape_predictor_81_face_landmarks.dat")
@@ -21,7 +27,7 @@ landmark_detector = dlib.shape_predictor("shape_predictor_81_face_landmarks.dat"
 #         cv2.circle(img, (x, y), 2, (255, 255, 0), -1)
 
 # Load the detector
-face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+face_cascade = cv2.CascadeClassifier('haar/haarcascade_frontalface_default.xml')
 specs_ori = cv2.imread('balaclava_rgba.png', -1)
 
 
@@ -39,7 +45,7 @@ def create_rgba():
 # create_rgba()
 cap = cv2.VideoCapture(0)  # webcame video
 # cap = cv2.VideoCapture('jj.mp4') #any Video file also
-cap.set(cv2.CAP_PROP_FPS, 30)
+# cap.set(cv2.CAP_PROP_FPS, 30)
 
 
 def transparentOverlay(src, overlay, pos=(0, 0), scale=1):
@@ -104,7 +110,6 @@ def isFrontal(landmarks, x_delta, y_delta):
 
 j = 0
 mask_index = 1
-dir = os.listdir("CelebAMask-HQ/CelebA-HQ-img-256-256/")
 
 
 def sort_names(dir):
@@ -117,44 +122,48 @@ def sort_names(dir):
     return dir
 
 
+dir = os.listdir("CelebAMask-HQ/CelebA-HQ-img-256-256/")
 dir = sort_names(dir)
-for i in range(len(dir)):
-    # ret, img = cap.read()
-    img = cv2.imread("CelebAMask-HQ/CelebA-HQ-img-256-256/" + dir[i], cv2.IMREAD_UNCHANGED)
+for i in range(len(dir) - 20000):
+    ret, img = cap.read()
+    # img = cv2.imread("CelebAMask-HQ/CelebA-HQ-img-256-256/" + dir[i], cv2.IMREAD_UNCHANGED)
     init = np.copy(img)
     # img = cv2.resize(img, dsize=(256, 256))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    faces = face_detector(img, 1)
-
+    # faces = face_detector(img, 1)
+    frame_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(frame_gray)
     landmark_tuple = []
     mask = None
     for k, d in enumerate(faces):
         landmarks = landmark_detector(img, d)
         dst_pts = getPoints(landmarks, [1, 3, 5, 7, 8, 9, 11, 13, 15, 29])
         src_pts = getSrcPoints(mask_index)
-        if (dst_pts > 0).all():
-            mask_img = cv2.imread("masks/" + str(mask_index) + ".png", cv2.IMREAD_UNCHANGED)
-            mask_img = mask_img.astype(np.float32)
-            mask_img = mask_img / 255
-            M, _ = cv2.findHomography(src_pts, dst_pts)
-            transformed_mask = cv2.warpPerspective(
-                mask_img,
-                M,
-                (img.shape[1], img.shape[0]),
-                None,
-                cv2.INTER_LINEAR,
-                cv2.BORDER_CONSTANT,
-            )
-            alpha_mask = transformed_mask[:, :, 3] * 255.0
-            mask = alpha_mask
-            alpha_image = 255.0 - alpha_mask
-            for c in range(0, 3):
-                img[:, :, c] = ((alpha_mask) * transformed_mask[:, :, c] + (alpha_image / 255) * img[:, :, c])
-        # for n in range(0, 81):
-        #     x = landmarks.part(n).x
-        #     y = landmarks.part(n).y
-        #     landmark_tuple.append((x, y))
-        #     cv2.circle(img, (x, y), 2, (255, 255, 0), -1)
+        # if (dst_pts > 0).all():
+        #     mask_img = cv2.imread("masks/" + str(mask_index) + ".png", cv2.IMREAD_UNCHANGED)
+        #     mask_img = mask_img.astype(np.float32)
+        #     mask_img = mask_img / 255
+        #     M, _ = cv2.findHomography(src_pts, dst_pts)
+        #     transformed_mask = cv2.warpPerspective(
+        #         mask_img,
+        #         M,
+        #         (img.shape[1], img.shape[0]),
+        #         None,
+        #         cv2.INTER_LINEAR,
+        #         cv2.BORDER_CONSTANT,
+        #     )
+        #     alpha_mask = transformed_mask[:, :, 3] * 255.0
+        #     mask = alpha_mask
+        #     alpha_image = 255.0 - alpha_mask
+        #     for c in range(0, 3):
+        #         img[:, :, c] = ((alpha_mask) * transformed_mask[:, :, c] + (alpha_image / 255) * img[:, :, c])
+
+
+        for n in range(0, 81):
+            x = landmarks.part(n).x
+            y = landmarks.part(n).y
+            landmark_tuple.append((x, y))
+            cv2.circle(img, (x, y), 2, (255, 255, 0), -1)
 
         # if isFrontal(landmarks, 0, 15):
         #     if mask is not None:
@@ -163,16 +172,24 @@ for i in range(len(dir)):
         #         cv2.imwrite("no_mask/" + str(j) + ".png", init)
         #         cv2.imshow('img.jpg', img)
         #     j = j + 1
+
+
     if mask is not None:
         cv2.imwrite("CelebAMask-HQ/CelebA-HQ-img-256-256-labels/" + dir[i], mask * 255)
         cv2.imwrite("CelebAMask-HQ/CelebA-HQ-img-256-256-masked/" + dir[i], img)
-    if mask_index != 5:
-        mask_index = mask_index + 1
-    else:
-        mask_index = 1
+
+    # img = np.round(model.predict(np.array([img]))[0, :, :, 0] * 255).astype("uint8")
+    # img = cv2.resize(img, dsize=(480, 640))
+    cv2.imshow('img.jpg', img)
     k = cv2.waitKey(30) & 0xff
     if k == 27:
-        cv2.imwrite('img.jpg', img)
         break
+
+
+    # if mask_index != 5:
+    #     mask_index = mask_index + 1
+    # else:
+    #     mask_index = 1
+
 cap.release()
 cv2.destroyAllWindows()
