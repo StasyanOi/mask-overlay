@@ -124,7 +124,8 @@ def sort_names(dir):
 
 dir = os.listdir("CelebAMask-HQ/CelebA-HQ-img-256-256/")
 dir = sort_names(dir)
-for i in range(len(dir) - 20000):
+# for i in range(len(dir) - 20000):
+while True:
     ret, img = cap.read()
     # img = cv2.imread("CelebAMask-HQ/CelebA-HQ-img-256-256/" + dir[i], cv2.IMREAD_UNCHANGED)
     init = np.copy(img)
@@ -135,10 +136,13 @@ for i in range(len(dir) - 20000):
     faces = face_cascade.detectMultiScale(frame_gray)
     landmark_tuple = []
     mask = None
-    for k, d in enumerate(faces):
-        landmarks = landmark_detector(img, d)
-        dst_pts = getPoints(landmarks, [1, 3, 5, 7, 8, 9, 11, 13, 15, 29])
-        src_pts = getSrcPoints(mask_index)
+    for (x, y, w, h) in faces:
+        cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        cv2.imwrite("face_detect.png", img)
+    # for k, d in enumerate(faces):
+        # landmarks = landmark_detector(img, d)
+        # dst_pts = getPoints(landmarks, [1, 3, 5, 7, 8, 9, 11, 13, 15, 29])
+        # src_pts = getSrcPoints(mask_index)
         # if (dst_pts > 0).all():
         #     mask_img = cv2.imread("masks/" + str(mask_index) + ".png", cv2.IMREAD_UNCHANGED)
         #     mask_img = mask_img.astype(np.float32)
@@ -157,14 +161,14 @@ for i in range(len(dir) - 20000):
         #     alpha_image = 255.0 - alpha_mask
         #     for c in range(0, 3):
         #         img[:, :, c] = ((alpha_mask) * transformed_mask[:, :, c] + (alpha_image / 255) * img[:, :, c])
-
-
-        for n in range(0, 81):
-            x = landmarks.part(n).x
-            y = landmarks.part(n).y
-            landmark_tuple.append((x, y))
-            cv2.circle(img, (x, y), 2, (255, 255, 0), -1)
-
+        #
+        #
+        # for n in range(0, 81):
+        #     x = landmarks.part(n).x
+        #     y = landmarks.part(n).y
+        #     landmark_tuple.append((x, y))
+        #     cv2.circle(img, (x, y), 2, (255, 255, 0), -1)
+        #
         # if isFrontal(landmarks, 0, 15):
         #     if mask is not None:
         #         cv2.imwrite("labels/" + str(j) + ".png", mask * 255)
@@ -174,9 +178,9 @@ for i in range(len(dir) - 20000):
         #     j = j + 1
 
 
-    if mask is not None:
-        cv2.imwrite("CelebAMask-HQ/CelebA-HQ-img-256-256-labels/" + dir[i], mask * 255)
-        cv2.imwrite("CelebAMask-HQ/CelebA-HQ-img-256-256-masked/" + dir[i], img)
+    # if mask is not None:
+    #     cv2.imwrite("CelebAMask-HQ/CelebA-HQ-img-256-256-labels/" + dir[i], mask * 255)
+    #     cv2.imwrite("CelebAMask-HQ/CelebA-HQ-img-256-256-masked/" + dir[i], img)
 
     # img = np.round(model.predict(np.array([img]))[0, :, :, 0] * 255).astype("uint8")
     # img = cv2.resize(img, dsize=(480, 640))
