@@ -36,6 +36,13 @@ def get_projected_points_pc(k_init, b_init, real_points):
         k_new = (k_init ** (-1)) * -1
         x_proj_pc2 = x - (math.fabs(y - line(k_new, x, b_init)) * math.cos(3.14 - math.atan(k_init))) * math.cos(1.57 - math.atan(k_init))
 
+        if x < 0:
+            x_proj_pc2 = x - (math.fabs(y - line(k_new, x, b_init)) * math.cos(3.14 - math.atan(k_init))) * math.cos(
+                1.57 - math.atan(k_init))
+        else:
+            x_proj_pc2 = x + (math.fabs(y - line(k_new, x, b_init)) * math.cos(3.14 - math.atan(k_init))) * math.cos(
+                1.57 - math.atan(k_init))
+
         if y < 0:
             y_proj_pc2 = line(k_new, x, b_init) + (math.fabs(y - line(k_new, x, b_init)) * (math.cos(3.14 - math.atan(k_init))) * math.sin(1.57 - math.atan(k_init)))
         else:
@@ -121,13 +128,8 @@ if __name__ == '__main__':
             break
 
 
-    print(str(k_init) + " " + str(b_init))
-
-
     projected_points_pc1, projected_points_pc2 = get_projected_points_pc(k_init, b_init, real_points)
 
-    print(projected_points_pc1)
-    print(real_points)
 
     new_axis = []
     for k in range(len(projected_points_pc1)):
