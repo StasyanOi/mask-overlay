@@ -23,23 +23,31 @@ def l2(real, gen):
     return np.sum((real - gen) ** 2)
 
 
-def get_projected_points(k_init, b_init, real_points):
+def get_projected_points_pc(k_init, b_init, real_points):
     k_init = round(k_init, 3)
     b_init = round(b_init, 3)
-    projected_points = []
+    projected_points_pc1 = []
+    projected_points_pc2 = []
     for x, y in real_points:
-        x_proj = x + (math.fabs(y - line(k_init, x, b_init)) * math.cos(1.57 - math.atan(k_init))) * math.sin(math.atan(k_init))
-        y_proj = line(k_init, x, b_init) \
-                 + (math.fabs(y - line(k_init, x, b_init)) * math.cos(1.57 - math.atan(k_init))) * math.cos(math.atan(k_init))
-        projected_points.append((x_proj, y_proj))
+        x_proj_pc1 = x + (math.fabs(y - line(k_init, x, b_init)) * math.cos(1.57 - math.atan(k_init))) * math.sin(math.atan(k_init))
+        y_proj_pc1 = line(k_init, x, b_init) + (math.fabs(y - line(k_init, x, b_init)) * math.cos(1.57 - math.atan(k_init))) * math.cos(math.atan(k_init))
+        projected_points_pc1.append((x_proj_pc1, y_proj_pc1))
 
-    return projected_points
+        k_new = (k_init ** (-1)) * -1
+        x_proj_pc2 = x - (math.fabs(y - line(k_new, x, b_init)) * math.cos(3.14 - math.atan(k_init))) * math.cos(1.57 - math.atan(k_init))
+        y_proj_pc2 = line(k_new, x, b_init) + (math.fabs(y - line(k_new, x, b_init)) * (math.cos(3.14 - math.atan(k_init))) * math.sin(1.57 - math.atan(k_init)))
+        projected_points_pc2.append((x_proj_pc2, y_proj_pc2))
+
+
+    return projected_points_pc1, projected_points_pc2
+
 
 
 if __name__ == '__main__':
-    x = np.linspace(0, 100, 100)
-    random = np.random.random(100)
-    y = np.linspace(0, 10, 100) + random
+    random1 = np.random.random(100)
+    x = np.linspace(0, 100, 100) + random1
+    random2 = np.random.random(100)
+    y = np.linspace(0, 100, 100) + random2
 
     stats(x, y)
 
@@ -112,15 +120,16 @@ if __name__ == '__main__':
     print(str(k_init) + " " + str(b_init))
 
 
-    projected_points = get_projected_points(k_init, b_init, real_points)
+    projected_points_pc1, projected_points_pc2 = get_projected_points_pc(k_init, b_init, real_points)
 
-    print(projected_points)
+    print(projected_points_pc1)
     print(real_points)
 
     new_axis = []
-    for k in range(len(projected_points)):
-        sqrt = math.sqrt(projected_points[k][0] ** 2 + projected_points[k][1] ** 2)
-        new_axis.append(((math.fabs(projected_points[k][0]) / sqrt)) * sqrt)
+    for k in range(len(projected_points_pc1)):
+        pc1 = math.sqrt(projected_points_pc1[k][0] ** 2 + projected_points_pc1[k][1] ** 2)
+        pc2 = math.sqrt(projected_points_pc2[k][0] ** 2 + projected_points_pc2[k][1] ** 2)
+        new_axis.append((pc1, pc2))
 
     print(new_axis)
 
