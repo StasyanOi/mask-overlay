@@ -35,7 +35,11 @@ def get_projected_points_pc(k_init, b_init, real_points):
 
         k_new = (k_init ** (-1)) * -1
         x_proj_pc2 = x - (math.fabs(y - line(k_new, x, b_init)) * math.cos(3.14 - math.atan(k_init))) * math.cos(1.57 - math.atan(k_init))
-        y_proj_pc2 = line(k_new, x, b_init) + (math.fabs(y - line(k_new, x, b_init)) * (math.cos(3.14 - math.atan(k_init))) * math.sin(1.57 - math.atan(k_init)))
+
+        if y < 0:
+            y_proj_pc2 = line(k_new, x, b_init) + (math.fabs(y - line(k_new, x, b_init)) * (math.cos(3.14 - math.atan(k_init))) * math.sin(1.57 - math.atan(k_init)))
+        else:
+            y_proj_pc2 = line(k_new, x, b_init) - (math.fabs(y - line(k_new, x, b_init)) * (math.cos(3.14 - math.atan(k_init))) * math.sin(1.57 - math.atan(k_init)))
         projected_points_pc2.append((x_proj_pc2, y_proj_pc2))
 
 
