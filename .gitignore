@@ -141,3 +141,4 @@ no_mask
 /CelebAMask-HQ/CelebA-HQ-img-256-256/
 eugen
 unet_seg
+detect_face
