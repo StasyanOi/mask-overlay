@@ -51,11 +51,9 @@ def merge_feature_mask(masked_people="./CelebAMask-HQ/CelebA-HQ-img-256-256-mask
         features, f_list = load_face_pictures_list_no_brightness(masked, files, color_mode='rgb')
         labels, l_list = load_face_pictures_list_no_brightness(img_labels, files)
         for i in range(len(features)):
-            features_temp = cv2.cvtColor(features[i], cv2.COLOR_RGB2RGBA)
-            label_temp = cv2.cvtColor(labels[i], cv2.COLOR_GRAY2RGBA)
-            label_temp[:, :, 3] = label_temp[:, :, 0]
+            features_temp = features[i]
+            label_temp = cv2.cvtColor(labels[i], cv2.COLOR_GRAY2RGB)
             inverted = np.invert(label_temp[:, :, 0])
-            features_temp[:, :, 3] = inverted
             uint_inverted = (inverted / 255).astype('uint8')
             features_temp[:, :, 0] = features_temp[:, :, 0] * uint_inverted
             features_temp[:, :, 1] = features_temp[:, :, 1] * uint_inverted
