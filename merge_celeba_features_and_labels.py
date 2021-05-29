@@ -50,15 +50,18 @@ def merge_feature_mask(masked_people="./CelebAMask-HQ/CelebA-HQ-img-256-256-mask
         files = [dir_list[i] for i in range(indexes[p + 1])]
         features, f_list = load_face_pictures_list_no_brightness(masked, files, color_mode='rgb')
         labels, l_list = load_face_pictures_list_no_brightness(img_labels, files)
-
         for i in range(len(features)):
-            for j in range(features[i].shape[0]):
-                for k in range(features[i].shape[1]):
-                    if labels[i][j, k] == 255:
-                        features[i][j, k, 0] = 255
-                        features[i][j, k, 1] = 255
-                        features[i][j, k, 2] = 255
-            cv2.imwrite(merged + f_list[i], features[i].astype('uint8'))
+            features_temp = cv2.cvtColor(features[i], cv2.COLOR_RGB2RGBA)
+            label_temp = cv2.cvtColor(labels[i], cv2.COLOR_GRAY2RGBA)
+            label_temp[:, :, 3] = label_temp[:, :, 0]
+            inverted = np.invert(label_temp[:, :, 0])
+            features_temp[:, :, 3] = inverted
+            uint_inverted = (inverted / 255).astype('uint8')
+            features_temp[:, :, 0] = features_temp[:, :, 0] * uint_inverted
+            features_temp[:, :, 1] = features_temp[:, :, 1] * uint_inverted
+            features_temp[:, :, 2] = features_temp[:, :, 2] * uint_inverted
+            features_temp = features_temp + label_temp
+            cv2.imwrite(merged + f_list[i], features_temp.astype('uint8'))
 
 
 if __name__ == '__main__':
