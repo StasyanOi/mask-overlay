@@ -28,7 +28,7 @@ landmark_detector = dlib.shape_predictor("shape_predictor_81_face_landmarks.dat"
 
 # Load the detector
 face_cascade = cv2.CascadeClassifier('haar/haarcascade_frontalface_default.xml')
-specs_ori = cv2.imread('balaclava_rgba.png', -1)
+specs_ori = cv2.imread('masks/balaclavas/balaclava_rgba.png', -1)
 
 
 def create_rgba():

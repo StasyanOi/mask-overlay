@@ -9,7 +9,7 @@ face_detector = dlib.get_frontal_face_detector()
 landmark_detector = dlib.shape_predictor("shape_predictor_81_face_landmarks.dat")
 
 face_cascade = cv2.CascadeClassifier('haar/haarcascade_frontalface_default.xml')
-specs_ori = cv2.imread('balaclava_rgba.png', -1)
+specs_ori = cv2.imread('masks/balaclavas/balaclava_rgba.png', -1)
 
 cap = cv2.VideoCapture(0)  # webcame video
 

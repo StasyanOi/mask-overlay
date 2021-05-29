@@ -21,7 +21,7 @@ def get_variance(images, mean):
     return images
 
 if __name__ == '__main__':
-    celeb_dir = "CelebAMask-HQ/CelebA-HQ-img-256-256"
+    celeb_dir = "../CelebAMask-HQ/CelebA-HQ-img-256-256"
     images = os.listdir(celeb_dir)
 
     faces = []
@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     eugenfaces = get_variance(stack, mean_face)
 
-    cv2.imwrite("eugen/mean_face.png", mean_face)
+    cv2.imwrite("../eugen/mean_face.png", mean_face)
 
     for i in range(len(eugenfaces)):
         cv2.imwrite("eugen/" + str(i) + ".png", eugenfaces[i].astype('uint8'))
