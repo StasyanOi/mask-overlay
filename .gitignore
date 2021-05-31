@@ -139,6 +139,6 @@ reject
 CelebAMask-HQ
 no_mask
 /CelebAMask-HQ/CelebA-HQ-img-256-256/
-eugen
+math/eugen
 unet_seg
 detect_face
