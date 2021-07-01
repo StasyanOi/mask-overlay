@@ -73,7 +73,7 @@ dir = os.listdir("mask_overlay_datasets/CelebA-HQ-img-256-256/")
 dir = sort_names(dir)
 for i in range(len(dir) - 20000):
     print(i)
-    img = cv2.imread("CelebAMask-HQ/CelebA-HQ-img-256-256/" + dir[i], cv2.IMREAD_UNCHANGED)
+    img = cv2.imread("mask_overlay_datasets/CelebA-HQ-img-256-256/" + dir[i], cv2.IMREAD_UNCHANGED)
     faces = face_detector(img, 1)
     landmark_tuple = []
     mask = None
@@ -101,8 +101,8 @@ for i in range(len(dir) - 20000):
                 img[:, :, c] = ((alpha_mask) * transformed_mask[:, :, c] + (alpha_image / 255) * img[:, :, c])
 
     if mask is not None:
-        cv2.imwrite("CelebAMask-HQ/CelebA-HQ-img-256-256-labels/" + dir[i], mask * 255)
-        cv2.imwrite("CelebAMask-HQ/CelebA-HQ-img-256-256-masked/" + dir[i], img)
+        cv2.imwrite("mask_overlay_datasets/CelebA-HQ-img-256-256-labels/" + dir[i], mask * 255)
+        cv2.imwrite("mask_overlay_datasets/CelebA-HQ-img-256-256-masked/" + dir[i], img)
 
     cv2.imshow('img.jpg', img)
     k = cv2.waitKey(30) & 0xff

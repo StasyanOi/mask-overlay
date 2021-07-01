@@ -35,9 +35,9 @@ def load_face_pictures(dir, lst, color_mode='grayscale'):
     return batch_feature, lst
 
 
-def merge_feature_mask(masked_people="./CelebAMask-HQ/CelebA-HQ-img-256-256-masked",
-                       binary_labels="./CelebAMask-HQ/CelebA-HQ-img-256-256-labels",
-                       merged_dir="./CelebAMask-HQ/CelebA-HQ-img-256-256-merged"):
+def merge_feature_mask(masked_people="./mask_overlay_datasets/CelebA-HQ-img-256-256-masked",
+                       binary_labels="./mask_overlay_datasets/CelebA-HQ-img-256-256-labels",
+                       merged_dir="./mask_overlay_datasets/CelebA-HQ-img-256-256-merged"):
     masked = masked_people + "/"
     img_labels = binary_labels + "/"
     merged = merged_dir + "/"
