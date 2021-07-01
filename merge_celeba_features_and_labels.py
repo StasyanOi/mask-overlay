@@ -35,21 +35,23 @@ def load_face_pictures(dir, lst, color_mode='grayscale'):
     return batch_feature, lst
 
 
-def merge_feature_mask(masked_people="./mask_overlay_datasets/CelebA-HQ-img-256-256-masked",
-                       binary_labels="./mask_overlay_datasets/CelebA-HQ-img-256-256-labels",
-                       merged_dir="./mask_overlay_datasets/CelebA-HQ-img-256-256-merged"):
-    masked = masked_people + "/"
-    img_labels = binary_labels + "/"
-    merged = merged_dir + "/"
+def merge_feature_mask(masked="./mask_overlay_datasets/CelebA-HQ-img-256-256-masked",
+                       binary="./mask_overlay_datasets/CelebA-HQ-img-256-256-labels",
+                       merged="./mask_overlay_datasets/CelebA-HQ-img-256-256-merged"):
+    masked_dir = masked + "/"
+    masked_labels_dir = binary + "/"
+    merged_dir = merged + "/"
 
-    dir_list = sort_names(os.listdir(masked))
+    images_to_merge = sort_names(os.listdir(masked_dir))
 
-    indexes = np.arange(0, 20000, 1)
+    total_num_of_images_to_merge = len(images_to_merge)
+    indexes = np.arange(0, total_num_of_images_to_merge, 100)
+    indexes = np.append(indexes, total_num_of_images_to_merge)
 
     for p in range(len(indexes) - 1):
-        files = [dir_list[i] for i in range(indexes[p + 1])]
-        features, f_list = load_face_pictures(masked, files, color_mode='rgb')
-        labels, l_list = load_face_pictures(img_labels, files)
+        files = [images_to_merge[i] for i in range(indexes[p], indexes[p + 1])]
+        features, f_list = load_face_pictures(masked_dir, files, color_mode='rgb')
+        labels, l_list = load_face_pictures(masked_labels_dir, files)
         for i in range(len(features)):
             features_temp = features[i]
             label_temp = cv2.cvtColor(labels[i], cv2.COLOR_GRAY2RGB)
@@ -59,7 +61,7 @@ def merge_feature_mask(masked_people="./mask_overlay_datasets/CelebA-HQ-img-256-
             features_temp[:, :, 1] = features_temp[:, :, 1] * uint_inverted
             features_temp[:, :, 2] = features_temp[:, :, 2] * uint_inverted
             features_temp = features_temp + label_temp
-            cv2.imwrite(merged + f_list[i], features_temp.astype('uint8'))
+            cv2.imwrite(merged_dir + f_list[i], features_temp.astype('uint8'))
 
 
 if __name__ == '__main__':
