@@ -69,7 +69,7 @@ def sort_names(dir):
     return dir
 
 
-dir = os.listdir("CelebAMask-HQ/CelebA-HQ-img-256-256/")
+dir = os.listdir("mask_overlay_datasets/CelebA-HQ-img-256-256/")
 dir = sort_names(dir)
 for i in range(len(dir) - 20000):
     print(i)

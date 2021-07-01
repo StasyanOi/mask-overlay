@@ -136,9 +136,9 @@ labels
 masked
 not_masked
 reject
-CelebAMask-HQ
+mask_overlay_datasets
 no_mask
-/CelebAMask-HQ/CelebA-HQ-img-256-256/
+/mask_overlay_datasets/CelebA-HQ-img-256-256/
 math/eugen
 unet_seg
 detect_face
