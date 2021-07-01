@@ -1,9 +1,4 @@
 import cv2
-import dlib
-import os
-import csv
-import numpy as np
-import math
 
 
 def create_rgba(img, m):
@@ -13,10 +8,10 @@ def create_rgba(img, m):
         for j in range(w):
             if (specs_ori[i][j][0] > 254) & (specs_ori[i][j][1] > 254) & (specs_ori[i][j][2] > 254):
                 specs_ori[i][j][3] = 0
-    cv2.imwrite("masks/" + str(m) + "_new.png", specs_ori)
+    cv2.imwrite("masks/" + str(m) + ".png", specs_ori)
 
 
 if __name__ == '__main__':
-    i = 5
-    first = cv2.imread("masks/" + str(i) + ".png")
-    create_rgba(first, i)
+    for i in range(1, 6):
+        first = cv2.imread("masks/" + str(i) + "_raw.png")
+        create_rgba(first, i)

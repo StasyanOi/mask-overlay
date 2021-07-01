@@ -14,7 +14,7 @@ def sort_names(dir):
     return dir
 
 
-def load_face_pictures_list_no_brightness(dir, lst, color_mode='grayscale'):
+def load_face_pictures(dir, lst, color_mode='grayscale'):
     images = []
 
     mode = -1
@@ -48,8 +48,8 @@ def merge_feature_mask(masked_people="./CelebAMask-HQ/CelebA-HQ-img-256-256-mask
 
     for p in range(len(indexes) - 1):
         files = [dir_list[i] for i in range(indexes[p + 1])]
-        features, f_list = load_face_pictures_list_no_brightness(masked, files, color_mode='rgb')
-        labels, l_list = load_face_pictures_list_no_brightness(img_labels, files)
+        features, f_list = load_face_pictures(masked, files, color_mode='rgb')
+        labels, l_list = load_face_pictures(img_labels, files)
         for i in range(len(features)):
             features_temp = features[i]
             label_temp = cv2.cvtColor(labels[i], cv2.COLOR_GRAY2RGB)
