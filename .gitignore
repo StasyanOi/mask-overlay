@@ -142,3 +142,4 @@ no_mask
 math/eugen
 unet_seg
 detect_face
+*.zip
