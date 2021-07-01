@@ -130,16 +130,5 @@ dmypy.json
 .idea
 *.iml
 venv
-Bald
-crop
-labels
-masked
-not_masked
-reject
 mask_overlay_datasets
-no_mask
-/mask_overlay_datasets/CelebA-HQ-img-256-256/
-math/eugen
-unet_seg
-detect_face
 *.zip
