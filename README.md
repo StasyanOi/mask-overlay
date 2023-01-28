@@ -1,6 +1,6 @@
 # medical-mask-overlay
 
-This project presents functionality for applying medical masks to a face.
+This project presents functionality for applying medical masks to face images.
 
 To setup the environment - take a look at the setup.sh.
 
